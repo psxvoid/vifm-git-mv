@@ -2,6 +2,7 @@ local function isGitDir()
 	local exitStatus = vifm.run({ cmd = "if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then exit 1; else exit 0; fi;"})
 	return exitStatus == 1
 end
+
 local function isGitDirPath(path)
 	local exitStatus = vifm.run({ cmd = "if git -C '" .. path .."' rev-parse --is-inside-work-tree >/dev/null 2>&1; then exit 1; else exit 0; fi;"})
 	return exitStatus == 1
@@ -71,10 +72,16 @@ local function getParentDir(path)
 	return string.sub(path, 1, index - 1)
 end
 
+local enabled = true
+
 vifm.events.listen({
 	event = "app.fsop",
 	---@param event vifm.events.FsopEvent
 	handler = function(event)
+		if enabled ~= true then
+			return
+		end
+
 		-- debug()
 		-- vifm.sb.info("OP: " .. event.op .. ", FT: " .. tostring(event.fromtrash) .. ", DIR: " .. tostring(event.isdir))
 		-- vifm.sb.info("source: " .. tostring(event.path))
@@ -147,5 +154,24 @@ vifm.events.listen({
 		end
 	end,
 })
+
+local added = vifm.cmds.add {
+    name = "toggleGitMv",
+    description = "Overrides mv operations with git mv in git annex enabled repositories",
+    handler = function()
+	    enabled = not enabled
+	    if enabled then
+		    vifm.sb.info('Git mv plugin is enabled')
+	    else
+		    vifm.sb.info('Git mv plugin is disabled')
+	    end
+    end,
+    minargs = 0,
+    maxargs = 0,
+}
+
+if not added then
+    vifm.sb.error("Failed to register : toggleGitMv")
+end
 
 return {}
