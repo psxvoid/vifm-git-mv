@@ -57,6 +57,20 @@ local function getTargetFileName(event)
 	return string.match(event.path, "vifm.Trash.%d+.%d+_(.*)")
 end
 
+local function getDirName(path)
+	return string.match(path, "/([^/]*)$")
+end
+
+local function getTargetDirName(event)
+	return string.match(event.path, "vifm.Trash.%d+.%d+_(.*)")
+end
+
+local function getParentDir(path)
+	local dirName = string.match(path, "/([^/]*)$")
+	local index = string.find(path, "/(" .. string.gsub(dirName, "([^%w])", "%%%1") .. ")$")
+	return string.sub(path, 1, index - 1)
+end
+
 vifm.events.listen({
 	event = "app.fsop",
 	---@param event vifm.events.FsopEvent
@@ -67,12 +81,17 @@ vifm.events.listen({
 		if event.op == "move" then
 			if event.totrash then
 				if (isGitAnnexRepoBoundary()) then
+					if lastOp ~= "totrash" then
+						toTrash = {}
+					end
+
 					if event.isdir then
-						-- not implemented
+						local dirName = getDirName(event.path)
+						toTrash[dirName] = {
+							name = dirName,
+							source = event.path
+						}
 					else
-						if lastOp ~= "totrash" then
-							toTrash = {}
-						end
 						local filename = getSourceFileName(event)
 						vifm.sb.info("filename(s): " .. filename)
 						toTrash[filename] = {
@@ -86,7 +105,22 @@ vifm.events.listen({
 				vifm.sb.info("File move detected.")
 				if (isGitAnnexRepoBoundary()) then
 					if event.isdir then
-						-- not implemented
+						local dirName = getTargetDirName(event)
+						vifm.sb.info("Dir name: " .. dirName)
+
+						if toTrash[dirName] == nil then
+							return
+						end
+
+						local src = toTrash[dirName].source
+						local dst = getParentDir(event.target)
+						vifm.sb.info("src: " .. src .. " dst: " .. dst)
+
+						vifm.run({ cmd = "mv '" .. event.target .. "' '" .. getParentDir(src) .. "'"}) -- restore original location
+						local result = vifm.run({ cmd = "git mv '" .. src .. "' '" .. dst .. "'"})
+						if result ~= 0 then
+							vifm.sb.error("Unable to git mv the directory")
+						end
 					else
 						vifm.sb.info("git mv")
 						local filename = getTargetFileName(event)
