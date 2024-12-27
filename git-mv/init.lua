@@ -93,6 +93,10 @@ vifm.events.listen({
 						vifm.sb.info("filename(d): " .. filename)
 						if toTrash[filename] ~= nil then
 							vifm.sb.info("works")
+							local src = toTrash[filename].source
+							local dst = event.path
+							vifm.fs.mv(dst, src) --restore original location
+							vifm.run("git mv '" .. src .. "' '" .. dst .."'") --TODO: handle fail status
 						end
 						lastOp = "fromtrash"
 					end
