@@ -29,6 +29,7 @@ With this plugin, this is no longer an issue, and it allows to avoid using `git 
 ## Notes
 
 - For now it's in a "proof of concept state" and most likely has bugs.
+- Most likely doesn't work on Windows (only Linux for now).
 - Most likely messes up with "undo/redo" - do not install this plugin if you rely on those operations.
 - The implementation is not optimal due to ViFM lua api limitations.
 - Many thanks to [xaizek](https://q2a.vifm.info/user/xaizek) for the initial help in [this thread](https://q2a.vifm.info/1948/is-it-possible-to-override-copy-paste-behavior-for-symlinks).
