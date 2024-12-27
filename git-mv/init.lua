@@ -92,11 +92,18 @@ vifm.events.listen({
 						local filename = getTargetFileName(event)
 						vifm.sb.info("filename(d): " .. filename)
 						if toTrash[filename] ~= nil then
-							vifm.sb.info("works")
+							vifm.sb.info("Creating symlink...")
 							local src = toTrash[filename].source
-							local dst = event.path
-							vifm.fs.mv(dst, src) --restore original location
-							vifm.run("git mv '" .. src .. "' '" .. dst .."'") --TODO: handle fail status
+							local dst = event.target
+							local trashPath = event.path
+							vifm.sb.info("src: " .. src)
+							vifm.sb.info("dst: " .. dst)
+							vifm.sb.info("trs: " .. trashPath)
+
+							vifm.run({ cmd = "mv '" .. dst .. "' '" .. src .. "'" }) --restore the original location
+							-- vifm.fs.mv(dst, src) -- not working during the fsop
+							vifm.run({ cmd = "git mv '" .. src .. "' '" .. dst .."'" }) --TODO: handle fail status
+							vifm.sb.info("works")
 						end
 						lastOp = "fromtrash"
 					end
