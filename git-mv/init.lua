@@ -174,4 +174,6 @@ if not added then
     vifm.sb.error("Failed to register : toggleGitMv")
 end
 
+vifm.sb.info('Git mv plugin is enabled')
+
 return {}
