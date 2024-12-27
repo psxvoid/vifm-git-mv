@@ -75,9 +75,9 @@ vifm.events.listen({
 	event = "app.fsop",
 	---@param event vifm.events.FsopEvent
 	handler = function(event)
-		debug()
-		vifm.sb.info("OP: " .. event.op .. ", FT: " .. tostring(event.fromtrash) .. ", DIR: " .. tostring(event.isdir))
-		vifm.sb.info("source: " .. tostring(event.path))
+		-- debug()
+		-- vifm.sb.info("OP: " .. event.op .. ", FT: " .. tostring(event.fromtrash) .. ", DIR: " .. tostring(event.isdir))
+		-- vifm.sb.info("source: " .. tostring(event.path))
 		if event.op == "move" then
 			if event.totrash then
 				if (isGitAnnexRepoBoundary()) then
@@ -93,7 +93,7 @@ vifm.events.listen({
 						}
 					else
 						local filename = getSourceFileName(event)
-						vifm.sb.info("filename(s): " .. filename)
+						-- vifm.sb.info("filename(s): " .. filename)
 						toTrash[filename] = {
 							name = filename,
 							source = event.path,
@@ -102,11 +102,11 @@ vifm.events.listen({
 					end
 				end
 			elseif event.fromtrash then
-				vifm.sb.info("File move detected.")
+				-- vifm.sb.info("File move detected.")
 				if (isGitAnnexRepoBoundary()) then
 					if event.isdir then
 						local dirName = getTargetDirName(event)
-						vifm.sb.info("Dir name: " .. dirName)
+						-- vifm.sb.info("Dir name: " .. dirName)
 
 						if toTrash[dirName] == nil then
 							return
@@ -114,7 +114,7 @@ vifm.events.listen({
 
 						local src = toTrash[dirName].source
 						local dst = getParentDir(event.target)
-						vifm.sb.info("src: " .. src .. " dst: " .. dst)
+						-- vifm.sb.info("src: " .. src .. " dst: " .. dst)
 
 						vifm.run({ cmd = "mv '" .. event.target .. "' '" .. getParentDir(src) .. "'"}) -- restore original location
 						local result = vifm.run({ cmd = "git mv '" .. src .. "' '" .. dst .. "'"})
@@ -122,22 +122,22 @@ vifm.events.listen({
 							vifm.sb.error("Unable to git mv the directory")
 						end
 					else
-						vifm.sb.info("git mv")
+						-- vifm.sb.info("git mv")
 						local filename = getTargetFileName(event)
-						vifm.sb.info("filename(d): " .. filename)
+						-- vifm.sb.info("filename(d): " .. filename)
 						if toTrash[filename] ~= nil then
-							vifm.sb.info("Creating symlink...")
+							-- vifm.sb.info("Creating symlink...")
 							local src = toTrash[filename].source
 							local dst = event.target
 							local trashPath = event.path
-							vifm.sb.info("src: " .. src)
-							vifm.sb.info("dst: " .. dst)
-							vifm.sb.info("trs: " .. trashPath)
+							-- vifm.sb.info("src: " .. src)
+							-- vifm.sb.info("dst: " .. dst)
+							-- vifm.sb.info("trs: " .. trashPath)
 
 							vifm.run({ cmd = "mv '" .. dst .. "' '" .. src .. "'" }) --restore the original location
 							-- vifm.fs.mv(dst, src) -- not working during the fsop
 							vifm.run({ cmd = "git mv '" .. src .. "' '" .. dst .."'" }) --TODO: handle fail status
-							vifm.sb.info("works")
+							-- vifm.sb.info("works")
 						end
 						lastOp = "fromtrash"
 					end
